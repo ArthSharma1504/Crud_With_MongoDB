@@ -1,9 +1,13 @@
 const express = require(`express`);
 const Item = require(`../models/Item`);
+const passport = require("passport");
 const router = express.Router();
+const authMiddleware = require('../middleware/auth');
+
+router.use(authMiddleware);
 
 // to create a new route :
-router.post('/', async(req,res)=>{
+router.post('/',passport.authenticate('jwt',{session:false}), async(req,res)=>{
     try{
         const newItem = new Item(req.body);
         await newItem.save();
@@ -14,7 +18,7 @@ router.post('/', async(req,res)=>{
 });
 
 // route to get all the items:
-router.get('/',async (req,res)=>{
+router.get('/',passport.authenticate('jwt',{session:false}),async (req,res)=>{
     try{const items = await Item.find();
     res.json(items);}catch(error){
         res.status(500).json({message : error.message});
@@ -22,7 +26,7 @@ router.get('/',async (req,res)=>{
 });
 
 // to get single item by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id',passport.authenticate('jwt',{session:false}), async (req, res) => {
     try {
       const item = await Item.findById(req.params.id);
       if (!item) return res.status(404).json({ message: 'Item not found' });
